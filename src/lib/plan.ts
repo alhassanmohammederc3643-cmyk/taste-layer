@@ -22,7 +22,7 @@ export async function planOuting(
   const brief = `Occasion: ${input.occasion ?? "group outing"}. Location: ${input.location ?? "anywhere"}. People: ${input.people.map((p) => `${p.name} likes ${p.likes.join(", ")}`).join("; ")}.`;
 
   const grounded = picks.length
-    ? `Taste-graph picks (ranked by fairness across the group):\n${picks.map((p, i) => `${i + 1}. ${p.name} [${(p.tags ?? []).join(", ")}] fans: ${p.fans.join(", ") || "none"}`).join("\n")}`
+    ? `Taste-graph picks (ranked by group coverage then affinity):\n${picks.map((p, i) => `${i + 1}. ${p.name} [${(p.tags ?? []).join(", ")}] fans: ${p.fans.join(", ") || "none"}`).join("\n")}`
     : "No taste-graph matches.";
   const [withQloo, withoutQloo] = await Promise.all([
     chat(llm, SYS, `${brief}\nChoose ONE ${input.domain} and say why it works for each person, using ONLY these picks.\n${grounded}`),

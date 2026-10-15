@@ -30,7 +30,7 @@ describe("qloo client", () => {
   it("sends key header, type URN and signals", async () => {
     let seen: URL | undefined; let hdr: any;
     const f = (async (u: URL, init: any) => { seen = u; hdr = init.headers; return new Response(JSON.stringify({ results: { entities: [{ entity_id: "1", name: "X", query: { affinity: 0.9 } }] } })); }) as any;
-    const c = new QlooClient("secret", "https://hackathon.api.qloo.com", f);
+    const c = new QlooClient("secret", "https://hackathon.api.qloo.com", f, 0);
     const out = await c.recommend({ domain: "place", signalEntityIds: ["a", "b"], location: "Accra" });
     expect(seen!.pathname).toBe("/v2/insights");
     expect(seen!.searchParams.get("filter.type")).toBe("urn:entity:place");

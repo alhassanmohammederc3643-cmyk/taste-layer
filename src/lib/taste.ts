@@ -1,4 +1,4 @@
-import type { Domain, Entity, Person, TasteSource } from "./types";
+import { DEFAULT_TAGS, type Domain, type Entity, type Person, type TasteSource } from "./types";
 
 export interface ResolvedPerson {
   name: string;
@@ -38,27 +38,34 @@ export async function groupPicks(
   location?: string,
   take = 5,
 ): Promise<Pick[]> {
+  const withAnchors = people.filter((p) => p.anchors.length);
   const perPerson = await Promise.all(
-    people.map(async (p) => ({
+    withAnchors.map(async (p) => ({
       name: p.name,
-      recs: p.anchors.length ? await src.recommend({ domain, signalEntityIds: p.anchors.map((a) => a.id), location, take: 20 }) : [],
+      recs: await src.recommend({ domain, signalEntityIds: p.anchors.map((a) => a.id), location, take: 50, tags: DEFAULT_TAGS[domain] }),
     })),
   );
-  const byId = new Map<string, { e: Entity; scores: Record<string, number> }>();
+  // Joint query blends everyone's anchors; it supplies the candidate pool and a group-level affinity.
+  const allIds = [...new Set(withAnchors.flatMap((p) => p.anchors.map((a) => a.id)))];
+  const joint = allIds.length ? await src.recommend({ domain, signalEntityIds: allIds, location, take: 30, tags: DEFAULT_TAGS[domain] }) : [];
+
+  const scoreByPerson = new Map<string, Record<string, number>>();
   for (const { name, recs } of perPerson)
-    for (const r of recs) {
-      const cur = byId.get(r.id) ?? { e: r, scores: {} };
-      cur.scores[name] = r.score ?? 0.5;
-      byId.set(r.id, cur);
-    }
-  const picks: Pick[] = [...byId.values()].map(({ e, scores }) => {
-    const vals = people.map((p) => scores[p.name] ?? 0);
-    return {
-      ...e,
-      fans: people.filter((p) => (scores[p.name] ?? 0) > 0).map((p) => p.name),
-      fairness: Math.min(...vals),
-      score: vals.reduce((a, b) => a + b, 0) / vals.length,
-    };
+    for (const r of recs) scoreByPerson.set(r.id, { ...(scoreByPerson.get(r.id) ?? {}), [name]: r.score ?? 0.5 });
+
+  const pool = new Map<string, Entity>();
+  for (const e of joint) pool.set(e.id, e);
+  for (const { recs } of perPerson) for (const e of recs.slice(0, 10)) if (!pool.has(e.id)) pool.set(e.id, e);
+
+  const picks: Pick[] = [...pool.values()].map((e) => {
+    const sc = scoreByPerson.get(e.id) ?? {};
+    const fans = withAnchors.filter((p) => (sc[p.name] ?? 0) > 0).map((p) => p.name);
+    const present = Object.values(sc);
+    const inJoint = joint.find((j) => j.id === e.id);
+    // coverage = share of people whose own taste list contains it
+    const coverage = withAnchors.length ? fans.length / withAnchors.length : 0;
+    const mean = present.length ? present.reduce((a, b) => a + b, 0) / present.length : 0;
+    return { ...e, fans, fairness: coverage, score: Math.max(mean, inJoint?.score ?? 0) };
   });
   return picks.sort((a, b) => b.fairness - a.fairness || (b.score ?? 0) - (a.score ?? 0)).slice(0, take);
 }

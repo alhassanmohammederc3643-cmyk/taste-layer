@@ -26,4 +26,4 @@ server.tool(
   },
 );
 
-await server.connect(new StdioServerTransport());
+(async () => { await server.connect(new StdioServerTransport()); })();

@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: 24, display: "grid", gap: 16 }}>
       <h1 style={{ margin: 0 }}>Taste Layer for agents</h1>
-      <p style={{ margin: 0, opacity: 0.8 }}>Same LLM, same question. One answer guessed, one grounded in Qloo's taste graph and ranked so the worst-served person in the group is served best.</p>
+      <p style={{ margin: 0, opacity: 0.8 }}>Same LLM, same question. One answer guessed, one grounded in Qloo's taste graph and ranked by how many people in the group it actually fits.</p>
       {res?.mode === "sample" && (
         <div style={{ ...card, borderColor: "#b7791f" }}>SAMPLE DATA mode: no Qloo key configured, results come from local fixtures, not Qloo.</div>
       )}
@@ -55,7 +55,7 @@ export default function Home() {
           <div style={{ ...card, borderColor: "#4c6ef5" }}><h3>With Qloo taste layer</h3><p>{res.withQloo}</p></div>
           <div style={{ ...card, gridColumn: "1 / -1" }}>
             <h3>Ranked picks</h3>
-            <ol>{res.picks.map((p: any) => (<li key={p.id}>{p.name} <small>fans: {p.fans.join(", ")} | fairness {p.fairness.toFixed(2)}</small></li>))}</ol>
+            <ol>{res.picks.map((p: any) => (<li key={p.id}>{p.name} <small>fans: {p.fans.join(", ")} | covers {Math.round(p.fairness * 100)}% of group</small></li>))}</ol>
           </div>
         </section>
       )}

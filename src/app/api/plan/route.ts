@@ -4,6 +4,8 @@ import { llmFromEnv } from "@/lib/llm";
 import { planOuting } from "@/lib/plan";
 import { getTasteSource } from "@/lib/source";
 
+export const maxDuration = 60;
+
 const Body = z.object({
   people: z.array(z.object({ name: z.string().min(1).max(40), likes: z.array(z.string().min(1).max(60)).min(1).max(8) })).min(1).max(6),
   domain: z.enum(["place", "artist", "movie", "brand", "destination", "book", "podcast"]).default("place"),

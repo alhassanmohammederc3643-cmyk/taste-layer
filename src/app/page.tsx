@@ -45,7 +45,7 @@ export default function Home() {
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={() => setPeople([...people, { name: "", likes: "" }])} disabled={people.length >= 6}>+ person</button>
           <input aria-label="location" value={location} onChange={(e) => setLocation(e.target.value)} />
-          <button onClick={run} disabled={busy}>{busy ? "Planning..." : "Plan the night"}</button>
+          <button onClick={run} disabled={busy}>{busy ? "Asking the taste graph (~10s)..." : "Plan the night"}</button>
         </div>
       </section>
       {err && <pre style={{ color: "#f88" }}>{err}</pre>}

@@ -10,27 +10,36 @@ export class QlooClient implements TasteSource {
     private apiKey: string,
     private baseUrl: string = DEFAULT_BASE,
     private fetchImpl: typeof fetch = fetch,
-    private gapMs = 250,
   ) {}
 
-  private chain: Promise<unknown> = Promise.resolve();
+  private active = 0;
+  private waiting: Array<() => void> = [];
+  private cache = new Map<string, Promise<any>>();
 
-  /** Serialize calls with a small gap and retry on 429 (hackathon keys are rate limited). */
+  /** Max 3 concurrent calls, retry on 429 (hackathon keys are rate limited), per-instance response cache. */
   private get(path: string, params: Record<string, string | number | boolean | undefined>): Promise<any> {
-    const run = async () => {
-      const url = new URL(path, this.baseUrl);
-      for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
+    const url = new URL(path, this.baseUrl);
+    for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
+    const key = url.toString();
+    const hit = this.cache.get(key);
+    if (hit) return hit;
+    const p = this.limited(async () => {
       for (let attempt = 0; ; attempt++) {
         const res = await this.fetchImpl(url, { headers: { "X-Api-Key": this.apiKey, Accept: "application/json" } });
         if (res.status === 429 && attempt < 4) { await sleep(800 * 2 ** attempt); continue; }
         if (!res.ok) throw new Error(`Qloo ${path} failed: ${res.status} ${(await res.text()).slice(0, 200)}`);
-        await sleep(this.gapMs);
         return res.json();
       }
-    };
-    const p = this.chain.then(run, run);
-    this.chain = p.catch(() => undefined);
+    });
+    p.catch(() => this.cache.delete(key));
+    this.cache.set(key, p);
     return p;
+  }
+
+  private async limited<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.active >= 3) await new Promise<void>((r) => this.waiting.push(r));
+    this.active++;
+    try { return await fn(); } finally { this.active--; this.waiting.shift()?.(); }
   }
 
   async resolve(name: string, domainHint?: Domain): Promise<Entity | null> {

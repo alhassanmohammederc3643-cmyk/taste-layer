@@ -1,7 +1,7 @@
 export interface LlmConfig { apiKey?: string; baseUrl?: string; model?: string }
 
 export function llmFromEnv(env: Record<string, string | undefined> = process.env): LlmConfig {
-  return { apiKey: env.LLM_API_KEY, baseUrl: env.LLM_BASE_URL || "https://api.groq.com/openai/v1", model: env.LLM_MODEL || "llama-3.3-70b-versatile" };
+  return { apiKey: env.LLM_API_KEY, baseUrl: env.LLM_BASE_URL || "https://openrouter.ai/api/v1", model: env.LLM_MODEL || "meta-llama/llama-3.3-70b-instruct:free" };
 }
 
 /** OpenAI-compatible chat call. Returns null when no key is set so callers can fall back to templates. */

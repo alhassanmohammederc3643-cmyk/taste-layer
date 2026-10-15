@@ -54,12 +54,13 @@ export class QlooClient implements TasteSource {
     return hit ? toEntity(hit, domainHint) : null;
   }
 
-  async recommend(opts: { domain: Domain; signalEntityIds: string[]; location?: string; take?: number; tags?: string[] }): Promise<Entity[]> {
+  async recommend(opts: { domain: Domain; signalEntityIds: string[]; location?: string; take?: number; tags?: string[]; excludeTags?: string[] }): Promise<Entity[]> {
     const json = await this.get("/v2/insights", {
       "filter.type": DOMAIN_URN[opts.domain],
       "signal.interests.entities": opts.signalEntityIds.join(","),
       "filter.location.query": opts.location,
       "filter.tags": opts.tags?.join(","),
+      "filter.exclude.tags": opts.excludeTags?.join(","),
       take: opts.take ?? 6,
       "feature.explainability": true,
     });

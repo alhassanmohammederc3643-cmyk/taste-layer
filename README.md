@@ -5,7 +5,7 @@ Agents are good at reasoning and bad at taste. This project gives any agent a ta
 1. **An MCP server** (`mcp/server.ts`) with two tools: `resolve_taste_anchor` and `recommend_for_group`.
 2. **A hosted demo** (Next.js) that answers the same question twice, once from a plain LLM and once grounded in Qloo, side by side.
 
-The key idea is **fairness ranking for groups**. Qloo is queried once per person from what that person likes, then picks are ranked by the worst-served person in the group, not by the average. A plain LLM has no per-person signal, only stereotypes.
+The key idea is **group coverage ranking**. Qloo is queried once per person from what that person likes, plus once for the whole group. Picks are ranked by coverage (how many people the pick fits), then affinity. A plain LLM has no per-person signal, only stereotypes.
 
 ## Status
 
@@ -30,7 +30,7 @@ MCP client config:
 ## Layout
 
 - `src/lib/qloo.ts` Qloo client (search + insights, `X-Api-Key` header)
-- `src/lib/taste.ts` anchor resolution and group fairness ranking
+- `src/lib/taste.ts` anchor resolution and group coverage ranking
 - `src/lib/plan.ts` runs the with/without-Qloo comparison
 - `src/lib/sample.ts` offline fixtures (sample mode only)
 - `mcp/server.ts` MCP server

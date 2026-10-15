@@ -1,4 +1,4 @@
-import { DEFAULT_TAGS, type Domain, type Entity, type Person, type TasteSource } from "./types";
+import { DEFAULT_EXCLUDE_TAGS, DEFAULT_TAGS, type Domain, type Entity, type Person, type TasteSource } from "./types";
 
 export interface ResolvedPerson {
   name: string;
@@ -27,7 +27,7 @@ export interface Pick extends Entity {
 }
 
 /**
- * Group consensus: run Qloo once per person, then rank by fairness (worst-served person)
+ * Group consensus: run Qloo once per person, then rank by coverage (share of the group it fits)
  * with mean affinity as tiebreaker. This is what an LLM alone cannot do: it has no
  * per-person taste signal, only stereotypes.
  */
@@ -42,12 +42,12 @@ export async function groupPicks(
   const perPerson = await Promise.all(
     withAnchors.map(async (p) => ({
       name: p.name,
-      recs: await src.recommend({ domain, signalEntityIds: p.anchors.map((a) => a.id), location, take: 50, tags: DEFAULT_TAGS[domain] }),
+      recs: await src.recommend({ domain, signalEntityIds: p.anchors.map((a) => a.id), location, take: 50, tags: DEFAULT_TAGS[domain], excludeTags: DEFAULT_EXCLUDE_TAGS[domain] }),
     })),
   );
   // Joint query blends everyone's anchors; it supplies the candidate pool and a group-level affinity.
   const allIds = [...new Set(withAnchors.flatMap((p) => p.anchors.map((a) => a.id)))];
-  const joint = allIds.length ? await src.recommend({ domain, signalEntityIds: allIds, location, take: 30, tags: DEFAULT_TAGS[domain] }) : [];
+  const joint = allIds.length ? await src.recommend({ domain, signalEntityIds: allIds, location, take: 30, tags: DEFAULT_TAGS[domain], excludeTags: DEFAULT_EXCLUDE_TAGS[domain] }) : [];
 
   const scoreByPerson = new Map<string, Record<string, number>>();
   for (const { name, recs } of perPerson)

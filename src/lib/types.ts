@@ -34,10 +34,15 @@ export interface TasteSource {
     location?: string;
     take?: number;
     tags?: string[];
+    excludeTags?: string[];
   }): Promise<Entity[]>;
 }
 
 /** Default tag filters per domain so "place" means somewhere to go out, not a hotel. */
+export const DEFAULT_EXCLUDE_TAGS: Partial<Record<Domain, string[]>> = {
+  place: ["urn:tag:genre:place:hotel", "urn:tag:category:place:hotel"],
+};
+
 export const DEFAULT_TAGS: Partial<Record<Domain, string[]>> = {
   place: ["urn:tag:genre:place:restaurant"],
 };

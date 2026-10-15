@@ -9,7 +9,7 @@ export default function Home() {
     { name: "Ama", likes: "Burna Boy, Black Panther" },
     { name: "Kojo", likes: "Sade, Zara" },
   ]);
-  const [location, setLocation] = useState("Accra");
+  const [location, setLocation] = useState("New York");
   const [res, setRes] = useState<any>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");

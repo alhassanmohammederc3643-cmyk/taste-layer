@@ -51,8 +51,8 @@ export default function Home() {
       {err && <pre style={{ color: "#f88" }}>{err}</pre>}
       {res && (
         <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div style={card}><h3>Without Qloo</h3><p>{res.withoutQloo}</p></div>
-          <div style={{ ...card, borderColor: "#4c6ef5" }}><h3>With Qloo taste layer</h3><p>{res.withQloo}</p></div>
+          <div style={card}><h3>Without Qloo</h3><Md text={res.withoutQloo} /></div>
+          <div style={{ ...card, borderColor: "#4c6ef5" }}><h3>With Qloo taste layer</h3><Md text={res.withQloo} /></div>
           <div style={{ ...card, gridColumn: "1 / -1" }}>
             <h3>Ranked picks</h3>
             <ol>{res.picks.map((p: any) => (<li key={p.id}>{p.name} <small>fans: {p.fans.join(", ")} | covers {Math.round(p.fairness * 100)}% of group</small></li>))}</ol>
@@ -60,5 +60,14 @@ export default function Home() {
         </section>
       )}
     </main>
+  );
+}
+
+function Md({ text }: { text: string }) {
+  const parts = String(text).split(/(\*\*[^*]+\*\*)/g);
+  return (
+    <p style={{ whiteSpace: "pre-wrap" }}>
+      {parts.map((seg, i) => (seg.startsWith("**") && seg.endsWith("**") ? <strong key={i}>{seg.slice(2, -2)}</strong> : seg))}
+    </p>
   );
 }

@@ -26,7 +26,7 @@ export async function planOuting(
     : "No taste-graph matches.";
   const safeChat = (user: string) => chat(llm, SYS, user).catch(() => null);
   const [withQloo, withoutQloo] = await Promise.all([
-    safeChat(`${brief}\nChoose ONE ${input.domain} and say why it works for each person, using ONLY these picks.\n${grounded}`),
+    safeChat(`${brief}\nChoose ONE ${input.domain} and explain the fit using ONLY these picks. Each pick's "fans" list names exactly who it fits; never claim it fits anyone not in its fans list - if it does not fit the whole group, say so plainly.\n${grounded}`),
     safeChat(`${brief}\nRecommend ONE ${input.domain}.`),
   ]);
   return {

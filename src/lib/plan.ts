@@ -24,9 +24,10 @@ export async function planOuting(
   const grounded = picks.length
     ? `Taste-graph picks (ranked by group coverage then affinity):\n${picks.map((p, i) => `${i + 1}. ${p.name} [${(p.tags ?? []).join(", ")}] fans: ${p.fans.join(", ") || "none"}`).join("\n")}`
     : "No taste-graph matches.";
+  const safeChat = (user: string) => chat(llm, SYS, user).catch(() => null);
   const [withQloo, withoutQloo] = await Promise.all([
-    chat(llm, SYS, `${brief}\nChoose ONE ${input.domain} and say why it works for each person, using ONLY these picks.\n${grounded}`),
-    chat(llm, SYS, `${brief}\nRecommend ONE ${input.domain}.`),
+    safeChat(`${brief}\nChoose ONE ${input.domain} and say why it works for each person, using ONLY these picks.\n${grounded}`),
+    safeChat(`${brief}\nRecommend ONE ${input.domain}.`),
   ]);
   return {
     mode: src.mode,

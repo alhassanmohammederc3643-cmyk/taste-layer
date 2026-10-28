@@ -34,7 +34,7 @@ export async function planOuting(
     people,
     picks,
     withQloo: withQloo ?? templated(picks),
-    withoutQloo: withoutQloo ?? "(Set LLM_API_KEY to see the plain-LLM answer here.)",
+    withoutQloo: withoutQloo ?? "The plain-LLM comparison is temporarily unavailable. The Qloo-grounded picks below are live.",
   };
 }
 

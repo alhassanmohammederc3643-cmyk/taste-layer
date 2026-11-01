@@ -34,7 +34,11 @@ export async function planOuting(
     people,
     picks,
     withQloo: withQloo ?? templated(picks),
-    withoutQloo: withoutQloo ?? "The plain-LLM comparison is temporarily unavailable. The Qloo-grounded picks below are live.",
+    withoutQloo:
+      withoutQloo ??
+      (src.mode === "sample"
+        ? "The plain-LLM comparison is temporarily unavailable. The picks below come from labeled sample fixtures, not Qloo."
+        : "The plain-LLM comparison is temporarily unavailable. The Qloo-grounded picks below are live."),
   };
 }
 

@@ -33,7 +33,7 @@ export default function Home() {
       <h1 style={{ margin: 0 }}>Taste Layer for agents</h1>
       <p style={{ margin: 0, opacity: 0.8 }}>Same LLM, same question. One answer guessed, one grounded in Qloo's taste graph and ranked by how many people in the group it actually fits.</p>
       {res?.mode === "sample" && (
-        <div style={{ ...card, borderColor: "#b7791f" }}>SAMPLE DATA mode: no Qloo key configured, results come from local fixtures, not Qloo.</div>
+        <div style={{ ...card, borderColor: "#b7791f" }}>SAMPLE DATA mode: results come from local fixtures, not Qloo (no Qloo key configured, or the Qloo API was unreachable).</div>
       )}
       <section style={{ ...card, display: "grid", gap: 8 }}>
         {people.map((p, i) => (

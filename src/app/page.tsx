@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <main style={{ maxWidth: 900, margin: "0 auto", padding: 24, display: "grid", gap: 16 }}>
       <h1 style={{ margin: 0 }}>Taste Layer for agents</h1>
-      <p style={{ margin: 0, opacity: 0.8 }}>Same LLM, same question. One answer guessed, one grounded in Qloo's taste graph and ranked by how many people in the group it actually fits.</p>
+      <p style={{ margin: 0, opacity: 0.8 }}>Same LLM, same question. One answer guessed, one ranked by how many people in the group it actually fits - live from Qloo's taste graph when available, clearly labeled sample fixtures otherwise.</p>
       {res?.mode === "sample" && (
         <div style={{ ...card, borderColor: "#b7791f" }}>
           SAMPLE DATA mode: every result below comes from a small built-in fixture list, not Qloo (no Qloo key configured, or the Qloo API was unreachable). Fixtures ignore the location field.

@@ -33,7 +33,9 @@ export default function Home() {
       <h1 style={{ margin: 0 }}>Taste Layer for agents</h1>
       <p style={{ margin: 0, opacity: 0.8 }}>Same LLM, same question. One answer guessed, one grounded in Qloo's taste graph and ranked by how many people in the group it actually fits.</p>
       {res?.mode === "sample" && (
-        <div style={{ ...card, borderColor: "#b7791f" }}>SAMPLE DATA mode: results come from local fixtures, not Qloo (no Qloo key configured, or the Qloo API was unreachable).</div>
+        <div style={{ ...card, borderColor: "#b7791f" }}>
+          SAMPLE DATA mode: every result below comes from a small built-in fixture list, not Qloo (no Qloo key configured, or the Qloo API was unreachable). Fixtures ignore the location field.
+        </div>
       )}
       <section style={{ ...card, display: "grid", gap: 8 }}>
         {people.map((p, i) => (
@@ -52,9 +54,12 @@ export default function Home() {
       {res && (
         <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <div style={card}><h3>Without Qloo</h3><Md text={res.withoutQloo} /></div>
-          <div style={{ ...card, borderColor: "#4c6ef5" }}><h3>With Qloo taste layer</h3><Md text={res.withQloo} /></div>
+          <div style={{ ...card, borderColor: res.mode === "sample" ? "#b7791f" : "#4c6ef5" }}>
+            <h3>{res.mode === "sample" ? "With taste layer (SAMPLE FIXTURES, not Qloo)" : "With Qloo taste layer"}</h3>
+            <Md text={res.withQloo} />
+          </div>
           <div style={{ ...card, gridColumn: "1 / -1" }}>
-            <h3>Ranked picks</h3>
+            <h3>Ranked picks{res.mode === "sample" ? " (SAMPLE FIXTURES, not Qloo)" : ""}</h3>
             <ol>{res.picks.map((p: any) => (<li key={p.id}>{p.name} <small>fans: {p.fans.join(", ")} | covers {Math.round(p.fairness * 100)}% of group</small></li>))}</ol>
           </div>
         </section>

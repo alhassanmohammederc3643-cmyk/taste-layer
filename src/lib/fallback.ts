@@ -1,47 +1,23 @@
-import type { Domain, Entity, TasteSource } from "./types";
+import { SampleSource } from "./sample";
+import type { TasteSource } from "./types";
 
 /**
- * Live source with a labeled fixture safety net.
- * Serves the primary (Qloo) source while it works. On the first failure
- * (revoked/expired key, network error, timeout) it permanently degrades
- * this process to the fallback (sample fixtures) instead of throwing,
- * and `mode` then reports "sample" so the UI banner and MCP responses
- * label results as fixtures rather than Qloo output.
+ * Runs one whole operation (a plan, an MCP tool call) against `src`.
+ * If `src` is a live source and any part of the operation fails
+ * (revoked/expired key, outage, timeout), the ENTIRE operation is
+ * rerun against the sample fixtures, so a result never mixes live
+ * anchors with fixture picks. The rerun reports mode "sample" through
+ * the operation's own labeling, so the UI and MCP clients mark the
+ * result as fixtures, not Qloo output.
+ *
+ * Per-request, not sticky: a transient failure degrades only that
+ * request; the next request tries the live source again.
  */
-export class FallbackSource implements TasteSource {
-  private degraded = false;
-  private reason?: string;
-
-  constructor(
-    private primary: TasteSource,
-    private fallback: TasteSource,
-  ) {}
-
-  get mode(): "live" | "sample" {
-    return this.degraded ? this.fallback.mode : this.primary.mode;
-  }
-
-  /** Set once the primary has failed; useful for logs and diagnostics. */
-  get degradedReason(): string | undefined {
-    return this.reason;
-  }
-
-  private async call<T>(fn: (s: TasteSource) => Promise<T>): Promise<T> {
-    if (this.degraded) return fn(this.fallback);
-    try {
-      return await fn(this.primary);
-    } catch (e) {
-      this.degraded = true;
-      this.reason = String((e as Error)?.message ?? e);
-      return fn(this.fallback);
-    }
-  }
-
-  resolve(name: string, domainHint?: Domain): Promise<Entity | null> {
-    return this.call((s) => s.resolve(name, domainHint));
-  }
-
-  recommend(opts: Parameters<TasteSource["recommend"]>[0]): Promise<Entity[]> {
-    return this.call((s) => s.recommend(opts));
+export async function withFixtureFallback<T>(src: TasteSource, fn: (s: TasteSource) => Promise<T>): Promise<T> {
+  try {
+    return await fn(src);
+  } catch (e) {
+    if (src.mode === "sample") throw e; // fixtures failing is a real bug, not a fallback case
+    return fn(new SampleSource());
   }
 }

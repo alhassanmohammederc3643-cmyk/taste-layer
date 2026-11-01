@@ -1,3 +1,4 @@
+import { withFixtureFallback } from "./fallback";
 import { chat, type LlmConfig } from "./llm";
 import { groupPicks, resolvePeople, type Pick, type ResolvedPerson } from "./taste";
 import type { Domain, Person, TasteSource } from "./types";
@@ -13,6 +14,16 @@ export interface PlanResult {
 const SYS = "You are a concise planning agent. Be specific and short (max 90 words).";
 
 export async function planOuting(
+  src: TasteSource,
+  llm: LlmConfig,
+  input: { people: Person[]; domain: Domain; location?: string; occasion?: string },
+): Promise<PlanResult> {
+  // Whole-plan fallback: any Qloo failure reruns everything against fixtures,
+  // so people, picks and copy are always one coherent provenance.
+  return withFixtureFallback(src, (s) => runPlan(s, llm, input));
+}
+
+async function runPlan(
   src: TasteSource,
   llm: LlmConfig,
   input: { people: Person[]; domain: Domain; location?: string; occasion?: string },
@@ -34,7 +45,11 @@ export async function planOuting(
     people,
     picks,
     withQloo: withQloo ?? templated(picks),
-    withoutQloo: withoutQloo ?? "The plain-LLM comparison is temporarily unavailable. The Qloo-grounded picks below are live.",
+    withoutQloo:
+      withoutQloo ??
+      (src.mode === "sample"
+        ? "The plain-LLM comparison is temporarily unavailable. The picks below come from labeled sample fixtures, not Qloo."
+        : "The plain-LLM comparison is temporarily unavailable. The Qloo-grounded picks below are live."),
   };
 }
 

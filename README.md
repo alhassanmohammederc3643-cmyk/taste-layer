@@ -9,7 +9,7 @@ The key idea is **group coverage ranking**. Qloo is queried once per person from
 
 ## Status
 
-Built for the Qloo Agentic Hackathon 2026. Without `QLOO_API_KEY` the app runs in clearly labeled **SAMPLE DATA mode** (local fixtures, not Qloo output) so it can be tested offline. With a key it calls Qloo's `/search` and `/v2/insights` endpoints on the hackathon base URL.
+Built for the Qloo Agentic Hackathon 2026. Without `QLOO_API_KEY` the app runs in clearly labeled **SAMPLE DATA mode** (local fixtures, not Qloo output) so it can be tested offline. With a key it calls Qloo's `/search` and `/v2/insights` endpoints on the hackathon base URL. If a Qloo call fails at runtime (expired or revoked key, outage), that request is rerun against the same clearly labeled SAMPLE DATA fixtures instead of erroring; later requests retry the live API. The MCP server behaves the same way.
 
 ## Run
 
